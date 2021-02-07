@@ -1,13 +1,11 @@
 package graph.hamiltonian_path;
 
-import com.google.common.truth.Truth;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TSPTest {
@@ -51,14 +49,41 @@ class TSPTest {
 		assertEquals(1 << graph.length, tsp.getDp()[0].length);
 	}
 
-//	@Test
-//	public void generalTest_fillBaseDistances_shouldFillCorrectStates() {
-//		double[][] graph = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-//		TSP tsp = new TSP(graph);
-//
-//		// startIndex = 0
-//		assertThat()
-//	}
+	@Test
+	public void generalTest_fillBaseDistances_shouldFillCorrectStates() {
+		double[][] graph = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+		TSP tsp = new TSP(graph);
+		tsp.fillBaseDistances();
+
+		int n = graph.length;
+		BitSet bitSet = new BitSet();
+
+		bitSet.set(tsp.getStartIndex());
+		Double[][] dp = new Double[n][1 << n];
+
+		for (int i = 0; i < n; i++) {
+			if (i == tsp.getStartIndex()) continue;
+			bitSet.set(i);
+			int subset = getBitMaskFromBitSet(bitSet);
+			dp[i][subset] = graph[tsp.getStartIndex()][i];
+			bitSet.clear(i);
+		}
+
+		for (int i = 0; i < dp.length; i++) {
+			System.out.println();
+			for (int j = 0; j < dp[0].length; j++) {
+				assertEquals(dp[i][j], tsp.getDp()[i][j]);
+			}
+		}
+	}
+
+	private int getBitMaskFromBitSet(BitSet bitSet) {
+		int ans = 0;
+		for (int i : bitSet.stream().toArray()) {
+			ans |= (1 << i);
+		}
+		return ans;
+	}
 
 	@Test
 	public void testTspIterativeInvalidStartNode() {
@@ -85,7 +110,41 @@ class TSPTest {
 		List<Integer> ans = tsp.getCombinations(2);
 		Set<Integer> expected = new HashSet<>();
 		generateCombinations(expected, 2, new boolean[graph.length], 0);
-		Truth.assertThat(ans).containsExactlyElementsIn(expected);
+		assertThat(ans).containsExactlyElementsIn(expected);
+		List<Integer> expected2 = generateCombinations2(2, graph.length);
+		assertThat(expected).containsExactlyElementsIn(expected2);
+		assertThat(expected2).containsExactlyElementsIn(ans);
+	}
+
+	public static List<Integer> generateCombinations2(int r, int n) {
+		List<Integer> subsets = new ArrayList<>();
+		combinations(0, 0, r, n, subsets);
+		return subsets;
+	}
+
+	// To find all the combinations of size r we need to recurse until we have
+	// selected r elements (aka r = 0), otherwise if r != 0 then we still need to select
+	// an element which is found after the position of our last selected element
+	private static void combinations(int set, int at, int r, int n, List<Integer> subsets) {
+
+		// Return early if there are more elements left to select than what is available.
+		int elementsLeftToPick = n - at;
+		if (elementsLeftToPick < r) return;
+
+		// We selected 'r' elements so we found a valid subset!
+		if (r == 0) {
+			subsets.add(set);
+		} else {
+			for (int i = at; i < n; i++) {
+				// Try including this element
+				set ^= (1 << i);
+
+				combinations(set, i + 1, r - 1, n, subsets);
+
+				// Backtrack and try the instance where we did not include this element
+				set ^= (1 << i);
+			}
+		}
 	}
 
 	private void generateCombinations(Set<Integer> ans, int k, boolean[] seen, int cur) {
@@ -101,7 +160,6 @@ class TSPTest {
 		}
 	}
 
-	/*
 	@Test
 	public void testTsp_small1() {
 		int n = 5;
@@ -116,9 +174,10 @@ class TSPTest {
 		graph[4][1] = graph[1][4] = 5;
 
 		double expected = 1 + 2 + 3 + 4 + 5;
-		double tspIterativeTourCost = new TSP(graph).getTourCost();
+		TSP tsp = new TSP(graph).solve();
 
-		assertThat(tspIterativeTourCost).isWithin(EPS).of(expected);
+		double tsp_minDist = tsp.getMinTotalDistance();
+		assertThat(tsp_minDist).isWithin(EPS).of(expected);
 	}
 
 	@Test
@@ -129,12 +188,13 @@ class TSPTest {
 				double[][] graph = new double[n][n];
 				randomFillDistMatrix(graph);
 
-				TSP dpIterativeSolver = new TSP(graph);
+				TSP tsp = new TSP(graph).solve();
+				TSP_BruteForce tsp_bruteForce = new TSP_BruteForce(graph);
 
-				double dp2 = dpIterativeSolver.getTourCost();
-				double bf = TspBruteForce.computeTourCost(TspBruteForce.tsp(graph), graph);
+				double tsp_minDist = tsp.getMinTotalDistance();
+				double tsp_bruteForce_minDist = tsp_bruteForce.getBestTourCost();
 
-				assertThat(dp2).isWithin(EPS).of(bf);
+				assertThat(tsp_minDist).isWithin(EPS).of(tsp_bruteForce_minDist);
 			}
 		}
 	}
@@ -147,15 +207,18 @@ class TSPTest {
 				double[][] graph = new double[n][n];
 				randomFillDistMatrix(graph);
 
-				TSP dpIterativeSolver = new TSP(graph);
-				int[] bfPath = TspBruteForce.tsp(graph);
+				TSP tsp = new TSP(graph).solve();
+				TSP_BruteForce tsp_bf = new TSP_BruteForce(graph);
 
-				double dp2 = dpIterativeSolver.getTourCost();
-				double bf = TspBruteForce.computeTourCost(bfPath, graph);
+				double tsp_minDist = tsp.getMinTotalDistance();
+				double tsp_bf_minDist = tsp_bf.getBestTourCost();
 
-				assertThat(dp2).isWithin(EPS).of(bf);
+				List<Integer> x = new ArrayList<>();
+				Arrays.stream(tsp_bf.getBestTour()).forEach(x::add);
 
-				assertThat(getTourCost(graph, dpIterativeSolver.getTour())).isWithin(EPS).of(bf);
+				assertThat(tsp.getTour()).containsExactlyElementsIn(x);
+				assertThat(tsp_minDist).isWithin(EPS).of(tsp_bf_minDist);
+//				assertThat(getTourCost(graph, tsp.getTour())).isWithin(EPS).of(tsp_bf_minDist);
 			}
 		}
 	}
@@ -189,5 +252,4 @@ class TSPTest {
 		for (int i = 1; i < tour.size(); i++) total += graph[tour.get(i - 1)][tour.get(i)];
 		return total;
 	}
-	*/
 }
