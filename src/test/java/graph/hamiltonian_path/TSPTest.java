@@ -211,12 +211,8 @@ class TSPTest {
 				TSP_BruteForce tsp_bf = new TSP_BruteForce(graph);
 
 				double tsp_minDist = tsp.getMinTotalDistance();
-				double tsp_bf_minDist = tsp_bf.getBestTourCost();
+				double tsp_bf_minDist = tsp_bf.getTourCostZeroStart();
 
-				List<Integer> x = new ArrayList<>();
-				Arrays.stream(tsp_bf.getBestTour()).forEach(x::add);
-
-				assertThat(tsp.getTour()).containsExactlyElementsIn(x);
 				assertThat(tsp_minDist).isWithin(EPS).of(tsp_bf_minDist);
 //				assertThat(getTourCost(graph, tsp.getTour())).isWithin(EPS).of(tsp_bf_minDist);
 			}

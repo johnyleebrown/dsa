@@ -193,6 +193,7 @@ public class TSP {
 			tour.add(bestIndex);
 		}
 
+		tour.add(startIndex);
 		Collections.reverse(tour);
 	}
 

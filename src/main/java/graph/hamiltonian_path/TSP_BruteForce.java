@@ -8,6 +8,7 @@ public class TSP_BruteForce {
 	private double cost;
 	private int[] bestTour;
 	private double bestTourCost;
+	private double tourCostZeroStart;
 
 	public TSP_BruteForce(double[][] matrix) {
 		cost = 0;
@@ -30,7 +31,10 @@ public class TSP_BruteForce {
 		do {
 
 			double tourCost = computeTourCost(permutation, matrix);
-
+			if (permutation[0] == 0) {
+				System.out.println("0 " + tourCost);
+				tourCostZeroStart = tourCost;
+			}
 			if (tourCost < bestTourCost) {
 				bestTourCost = tourCost;
 				bestTour = permutation.clone();
@@ -82,6 +86,10 @@ public class TSP_BruteForce {
 		int tmp = sequence[i];
 		sequence[i] = sequence[j];
 		sequence[j] = tmp;
+	}
+
+	public double getTourCostZeroStart() {
+		return tourCostZeroStart;
 	}
 
 	public double getBestTourCost() {
