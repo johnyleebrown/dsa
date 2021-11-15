@@ -43,4 +43,11 @@ public class Operations {
 		}
 		return end + 1;
 	}
+
+	/**
+	 * if a contains b
+	 */
+	public boolean contains(long a, long b) {
+		return (b & a) == b;
+	}
 }
