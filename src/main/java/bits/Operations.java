@@ -50,4 +50,8 @@ public class Operations {
 	public boolean contains(long a, long b) {
 		return (b & a) == b;
 	}
+
+	private int unsetMask(int a, int mask) {
+		return a ^ mask;
+	}
 }
