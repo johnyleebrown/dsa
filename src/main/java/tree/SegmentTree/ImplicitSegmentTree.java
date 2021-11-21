@@ -166,11 +166,14 @@ public class ImplicitSegmentTree implements SegmentTreeQuery {
 
     private void update(Node cur) {
         if (af == AggregateFunction.MIN) {
-            cur.min = Math.min(cur.left.min + cur.left.delta, cur.right.min + cur.right.delta);
+            cur.min = Math.min(cur.left.min + cur.left.delta,
+                cur.right.min + cur.right.delta);
         } else if (af == AggregateFunction.MAX) {
-            cur.max = Math.max(cur.left.max + cur.left.delta, cur.right.max + cur.right.delta);
+            cur.max = Math.max(cur.left.max + cur.left.delta,
+                cur.right.max + cur.right.delta);
         } else if (af == AggregateFunction.SUM) {
-            cur.val = cur.left.val + cur.left.delta + cur.right.val + cur.right.delta;
+            cur.val =
+                cur.left.val + cur.left.delta + cur.right.val + cur.right.delta;
         }
     }
 
@@ -187,9 +190,9 @@ public class ImplicitSegmentTree implements SegmentTreeQuery {
         int level = 0;
         while (!q.isEmpty()) {
             int size = q.size();
+            System.out.print("level: " + level + ", ");
             while (--size >= 0) {
                 Node cur = q.removeFirst();
-                System.out.print("level: " + level + ", ");
                 System.out.print("ind: [" + cur.lo + ", " + cur.hi + "] ");
                 System.out.print("delta: " + cur.delta + ", ");
                 System.out.print("min: " + cur.min + ", ");
@@ -220,6 +223,7 @@ public class ImplicitSegmentTree implements SegmentTreeQuery {
     /**************************************************************************/
 
     public static class Node {
+
         int lo, hi;
         int delta, val, min, max;
         Node left, right;
