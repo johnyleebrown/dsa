@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.grigorii</groupId>
-    <artifactId>ds-a</artifactId>
+    <artifactId>dsa</artifactId>
     <version>1.0</version>
 
     <properties>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>me.grigorii</groupId>
             <artifactId>java-utils</artifactId>
-            <version>1.0</version>
+            <version>0.0.1</version>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>junit</groupId>-->
